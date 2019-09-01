@@ -13,24 +13,24 @@ class NanoVisSystem {
     ~NanoVisSystem() {
         nanogui::shutdown();
     }
-    std::unordered_set<NanoVis *> vises;
+    std::unordered_set<NanoVis*> vises;
 
-  public:
-    static NanoVisSystem &system() {
+public:
+    static NanoVisSystem& system() {
         static NanoVisSystem sys;
         return sys;
     }
 
-    void register_vis(NanoVis *vis) {
+    void register_vis(NanoVis* vis) {
         vises.insert(vis);
     }
 
-    void unregister_vis(NanoVis *vis) {
+    void unregister_vis(NanoVis* vis) {
         vises.erase(vis);
     }
 
-    void broadcast(NanoVis *vis, const void *obj) {
-        for (NanoVis *other_vis : vises) {
+    void broadcast(NanoVis* vis, const void* obj) {
+        for (NanoVis* other_vis : vises) {
             if (other_vis != vis) {
                 other_vis->broadcast(obj, false);
             }
@@ -48,8 +48,8 @@ class NanoVisSystem {
 
 struct NanoVis::NanoVisImpl {
     class Bridge : public NanoVisWindow {
-      public:
-        Bridge(NanoVis *vis, const std::string &title, int width, int height) :
+    public:
+        Bridge(NanoVis* vis, const std::string& title, int width, int height) :
             NanoVisWindow(title, width, height), vis(vis), grid_visible(true) {
             shader.init("vc_shader",
                         glsl_code(
@@ -71,7 +71,7 @@ struct NanoVis::NanoVisImpl {
             create_world_frame();
         }
 
-        void add_renderer(std::function<void(nanogui::GLShader &)> renderer) {
+        void add_renderer(std::function<void(nanogui::GLShader&)> renderer) {
             renderers.emplace_back(renderer);
         }
 
@@ -79,7 +79,7 @@ struct NanoVis::NanoVisImpl {
             grid_visible = visible;
         }
 
-      protected:
+    protected:
         void create_world_frame() {
             world_box_points.resize(3, 114);
             world_box_colors.resize(3, 114);
@@ -153,7 +153,7 @@ struct NanoVis::NanoVisImpl {
                 draw_pickup_point();
             }
             shader.setUniform("scale", world_scale());
-            for (auto &r : renderers) r(shader);
+            for (auto& r : renderers) r(shader);
             vis->draw();
         }
 
@@ -188,17 +188,17 @@ struct NanoVis::NanoVisImpl {
             shader.drawArray(GL_LINES, 0, cursor_points.cols());
         }
 
-        NanoVis *vis;
+        NanoVis* vis;
         nanogui::GLShader shader;
         Eigen::Matrix<float, 3, Eigen::Dynamic> world_box_points;
         Eigen::Matrix<float, 3, Eigen::Dynamic> world_box_colors;
-        std::vector<std::function<void(nanogui::GLShader &)>> renderers;
+        std::vector<std::function<void(nanogui::GLShader&)>> renderers;
         bool grid_visible;
     };
     std::unique_ptr<Bridge> window;
 };
 
-NanoVis::NanoVis(const std::string &title, int width, int height) {
+NanoVis::NanoVis(const std::string& title, int width, int height) {
     NanoVisSystem::system().register_vis(this);
     impl = std::make_unique<NanoVisImpl>();
     impl->window = std::make_unique<NanoVisImpl::Bridge>(this, title, width, height);
@@ -224,36 +224,36 @@ int NanoVis::height() const {
     return impl->window->height();
 }
 
-void NanoVis::add_button(const std::string &title, const std::string &name, const std::function<void()> &callback) {
+void NanoVis::add_button(const std::string& title, const std::string& name, const std::function<void()>& callback) {
     impl->window->add_button(title, name, callback);
 }
 
-void NanoVis::add_toggle(const std::string &title, const std::string &name, const std::function<void(bool)> &callback) {
+void NanoVis::add_toggle(const std::string& title, const std::string& name, const std::function<void(bool)>& callback) {
     impl->window->add_toggle(title, name, callback);
 }
 
-void NanoVis::add_toggle(const std::string &title, const std::string &name, bool &value, const std::function<void(bool)> &callback) {
+void NanoVis::add_toggle(const std::string& title, const std::string& name, bool& value, const std::function<void(bool)>& callback) {
     impl->window->add_toggle(title, name, value, callback);
 }
 
-void NanoVis::add_repeat(const std::string &title, const std::string &name, const std::function<bool()> &callback) {
+void NanoVis::add_repeat(const std::string& title, const std::string& name, const std::function<bool()>& callback) {
     impl->window->add_repeat(title, name, callback);
 }
 
-void NanoVis::add_graph(const std::string &title, const std::string &name, const double &value, const double &max_value, const double &min_value, const Eigen::Vector3d &color) {
+void NanoVis::add_graph(const std::string& title, const std::string& name, const double& value, const double& max_value, const double& min_value, const Eigen::Vector3d& color) {
     impl->window->add_graph(title, name, value, max_value, min_value, color);
 }
 
-void NanoVis::add_graph(const std::string &title, const std::string &name, const std::vector<double> &values, const double &max_value, const double &min_value, const Eigen::Vector3d &color) {
+void NanoVis::add_graph(const std::string& title, const std::string& name, const std::vector<double>& values, const double& max_value, const double& min_value, const Eigen::Vector3d& color) {
     impl->window->add_graph(title, name, values, max_value, min_value, color);
 }
 
-void NanoVis::add_image(const std::string &title, const std::string &name, const cv::Mat &image) {
+void NanoVis::add_image(const std::string& title, const std::string& name, const cv::Mat& image) {
     impl->window->add_image(title, name, image);
 }
 
-void NanoVis::add_points(const std::vector<Eigen::Vector3d> &points, const Eigen::Vector3d &color, const double &point_size) {
-    auto renderer = [&points, color, point_size](nanogui::GLShader &shader) {
+void NanoVis::add_points(const std::vector<Eigen::Vector3d>& points, const Eigen::Vector3d& color, const double& point_size) {
+    auto renderer = [&points, color, point_size](nanogui::GLShader& shader) {
         if (points.size() > 0) {
             Eigen::MatrixXf dpoints;
             Eigen::MatrixXf dcolors;
@@ -272,8 +272,8 @@ void NanoVis::add_points(const std::vector<Eigen::Vector3d> &points, const Eigen
     impl->window->add_renderer(renderer);
 }
 
-void NanoVis::add_points(const std::vector<Eigen::Vector3d> &points, const std::vector<Eigen::Vector3d> &colors, const double &point_size) {
-    auto renderer = [&points, &colors, point_size](nanogui::GLShader &shader) {
+void NanoVis::add_points(const std::vector<Eigen::Vector3d>& points, const std::vector<Eigen::Vector3d>& colors, const double& point_size) {
+    auto renderer = [&points, &colors, point_size](nanogui::GLShader& shader) {
         if (points.size() > 0) {
             Eigen::MatrixXf dpoints;
             Eigen::MatrixXf dcolors;
@@ -292,8 +292,8 @@ void NanoVis::add_points(const std::vector<Eigen::Vector3d> &points, const std::
     impl->window->add_renderer(renderer);
 }
 
-void NanoVis::add_path(const std::vector<Eigen::Vector3d> &vertices, const Eigen::Vector3d &color) {
-    auto renderer = [&vertices, color](nanogui::GLShader &shader) {
+void NanoVis::add_path(const std::vector<Eigen::Vector3d>& vertices, const Eigen::Vector3d& color) {
+    auto renderer = [&vertices, color](nanogui::GLShader& shader) {
         if (vertices.size() > 0) {
             Eigen::MatrixXf dpoints;
             Eigen::MatrixXf dcolors;
@@ -311,8 +311,8 @@ void NanoVis::add_path(const std::vector<Eigen::Vector3d> &vertices, const Eigen
     impl->window->add_renderer(renderer);
 }
 
-void NanoVis::add_path(const std::vector<Eigen::Vector3d> &vertices, const std::vector<Eigen::Vector3d> &colors) {
-    auto renderer = [&vertices, &colors](nanogui::GLShader &shader) {
+void NanoVis::add_path(const std::vector<Eigen::Vector3d>& vertices, const std::vector<Eigen::Vector3d>& colors) {
+    auto renderer = [&vertices, &colors](nanogui::GLShader& shader) {
         if (vertices.size() > 0) {
             Eigen::MatrixXf dpoints;
             Eigen::MatrixXf dcolors;
@@ -330,7 +330,7 @@ void NanoVis::add_path(const std::vector<Eigen::Vector3d> &vertices, const std::
     impl->window->add_renderer(renderer);
 }
 
-void NanoVis::set_timeout(int refresh, const std::function<bool()> &callback) {
+void NanoVis::set_timeout(int refresh, const std::function<bool()>& callback) {
     impl->window->set_timeout(refresh, callback);
 }
 
@@ -338,7 +338,7 @@ void NanoVis::set_grid_visible(bool visible) {
     impl->window->set_grid_visible(visible);
 }
 
-void NanoVis::set_camera(const Eigen::Vector3d &position, double roll, double yaw, double pitch) {
+void NanoVis::set_camera(const Eigen::Vector3d& position, double roll, double yaw, double pitch) {
     impl->window->set_camera(position.cast<float>(), (float)roll, (float)yaw, (float)pitch);
 }
 
@@ -369,7 +369,7 @@ void NanoVis::set_position(int x, int y) {
 void NanoVis::draw() {
 }
 
-void NanoVis::broadcast(const void *value, bool global) {
+void NanoVis::broadcast(const void* value, bool global) {
     impl->window->broadcast(value);
     if (global) {
         NanoVisSystem::system().broadcast(this, value);

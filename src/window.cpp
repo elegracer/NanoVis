@@ -7,7 +7,7 @@
 
 using namespace nanogui;
 
-NanoVisWindow::NanoVisWindow(const std::string &title, int width, int height) {
+NanoVisWindow::NanoVisWindow(const std::string& title, int width, int height) {
     m_screen = new NanoVisScreen(this, Vector2i(width, height), title);
 
     viewport_ryp = {0, -45, -42};
@@ -24,7 +24,7 @@ void NanoVisWindow::show() {
     m_screen->performLayout();
     nanogui::Vector2i lt(0, 0);
     int lcol = 0;
-    for (const auto &p : m_panels) {
+    for (const auto& p : m_panels) {
         if (lt.y() + p.second->height() >= height()) {
             lt.x() = lcol;
             lt.y() = 0;
@@ -37,7 +37,7 @@ void NanoVisWindow::show() {
 }
 
 void NanoVisWindow::refresh() {
-    for (const auto &s : m_subscribers) {
+    for (const auto& s : m_subscribers) {
         broadcast(s.first);
     }
     m_screen->drawAll();
@@ -51,21 +51,21 @@ int NanoVisWindow::height() const {
     return m_screen->height();
 }
 
-void NanoVisWindow::add_button(const std::string &title, const std::string &name, const std::function<void()> &callback) {
-    Button *b = new Button(panel(title), name);
+void NanoVisWindow::add_button(const std::string& title, const std::string& name, const std::function<void()>& callback) {
+    Button* b = new Button(panel(title), name);
     b->setCallback(callback);
     add_widget(title, b);
 }
 
-void NanoVisWindow::add_toggle(const std::string &title, const std::string &name, const std::function<void(bool)> &callback) {
-    Button *b = new Button(panel(title), name);
+void NanoVisWindow::add_toggle(const std::string& title, const std::string& name, const std::function<void(bool)>& callback) {
+    Button* b = new Button(panel(title), name);
     b->setFlags(Button::Flags::ToggleButton);
     b->setChangeCallback(callback);
     add_widget(title, b);
 }
 
-void NanoVisWindow::add_toggle(const std::string &title, const std::string &name, bool &value, const std::function<void(bool)> &callback) {
-    Button *b = new Button(panel(title), name);
+void NanoVisWindow::add_toggle(const std::string& title, const std::string& name, bool& value, const std::function<void(bool)>& callback) {
+    Button* b = new Button(panel(title), name);
     b->setFlags(Button::Flags::ToggleButton);
 
     auto subscriber = [&value, b]() {
@@ -74,7 +74,7 @@ void NanoVisWindow::add_toggle(const std::string &title, const std::string &name
         }
     };
     subscriber();
-    m_subscribers[(void *)(&value)][b] = subscriber;
+    m_subscribers[(void*)(&value)][b] = subscriber;
 
     b->setChangeCallback([&value, callback, this](bool new_value) {
         if (value != new_value) {
@@ -88,8 +88,8 @@ void NanoVisWindow::add_toggle(const std::string &title, const std::string &name
     add_widget(title, b);
 }
 
-void NanoVisWindow::add_repeat(const std::string &title, const std::string &name, const std::function<bool()> &callback) {
-    Button *b = new Button(panel(title), name);
+void NanoVisWindow::add_repeat(const std::string& title, const std::string& name, const std::function<bool()>& callback) {
+    Button* b = new Button(panel(title), name);
     b->setFlags(Button::Flags::ToggleButton);
     if (callback) {
         b->setChangeCallback([b, callback, this](bool pushed) {
@@ -110,17 +110,17 @@ void NanoVisWindow::add_repeat(const std::string &title, const std::string &name
     add_widget(title, b);
 }
 
-void NanoVisWindow::add_graph(const std::string &title, const std::string &name, const double &value, const double &max_value, const double &min_value, const Eigen::Vector3d &color) {
-    Graph *g = new Graph(panel(title), name);
+void NanoVisWindow::add_graph(const std::string& title, const std::string& name, const double& value, const double& max_value, const double& min_value, const Eigen::Vector3d& color) {
+    Graph* g = new Graph(panel(title), name);
     g->setForegroundColor(Eigen::Vector3f(color.cast<float>()));
-    VectorXf &f = g->values();
+    VectorXf& f = g->values();
     f.resize(60);
     for (int i = 0; i < f.rows(); ++i) {
         f[i] = (value - min_value) / (max_value - min_value);
     }
 
     auto subscriber = [&value, g, max_value, min_value]() {
-        VectorXf &f = g->values();
+        VectorXf& f = g->values();
         for (int i = 1; i < f.rows(); ++i) {
             f[i - 1] = f[i];
         }
@@ -128,16 +128,16 @@ void NanoVisWindow::add_graph(const std::string &title, const std::string &name,
         g->setFooter(std::to_string(value));
     };
     subscriber();
-    m_subscribers[(void *)(&value)][g] = subscriber;
+    m_subscribers[(void*)(&value)][g] = subscriber;
 
     add_widget(title, g);
 }
 
-void NanoVisWindow::add_graph(const std::string &title, const std::string &name, const std::vector<double> &values, const double &max_value, const double &min_value, const Eigen::Vector3d &color) {
-    Graph *g = new Graph(panel(title), name);
+void NanoVisWindow::add_graph(const std::string& title, const std::string& name, const std::vector<double>& values, const double& max_value, const double& min_value, const Eigen::Vector3d& color) {
+    Graph* g = new Graph(panel(title), name);
     g->setForegroundColor(Eigen::Vector3f(color.cast<float>()));
     auto subscriber = [&values, g, max_value, min_value]() {
-        VectorXf &f = g->values();
+        VectorXf& f = g->values();
         f.resize(values.size());
         double computed_max_value = -std::numeric_limits<double>::max();
         double computed_min_value = +std::numeric_limits<double>::max();
@@ -155,15 +155,15 @@ void NanoVisWindow::add_graph(const std::string &title, const std::string &name,
         }
     };
     subscriber();
-    m_subscribers[(void *)(&values)][g] = subscriber;
+    m_subscribers[(void*)(&values)][g] = subscriber;
 
     add_widget(title, g);
 }
 
-void NanoVisWindow::add_image(const std::string &title, const std::string &name, const cv::Mat &image) {
+void NanoVisWindow::add_image(const std::string& title, const std::string& name, const cv::Mat& image) {
     GLuint texture_id;
     glGenTextures(1, &texture_id); // well okay I admit that this handle is never released in program.
-    ImageView *i = new ImageView(panel(title), texture_id);
+    ImageView* i = new ImageView(panel(title), texture_id);
 
     i->setFixedSize({240, 180});
     i->setFixedScale(true);
@@ -187,13 +187,13 @@ void NanoVisWindow::add_image(const std::string &title, const std::string &name,
         i->bindImage(texture_id);
     };
     subscriber();
-    m_subscribers[(void *)(&image)][i] = subscriber;
+    m_subscribers[(void*)(&image)][i] = subscriber;
 
     add_widget(title, i);
 }
 
-void NanoVisWindow::add_widget(const std::string &title, Widget *widget) {
-    AdvancedGridLayout *l = layout(title);
+void NanoVisWindow::add_widget(const std::string& title, Widget* widget) {
+    AdvancedGridLayout* l = layout(title);
     if (l->rowCount() > 0) {
         l->appendRow(3);
     }
@@ -201,8 +201,8 @@ void NanoVisWindow::add_widget(const std::string &title, Widget *widget) {
     l->setAnchor(widget, AdvancedGridLayout::Anchor(0, l->rowCount() - 1, l->colCount(), 1));
 }
 
-void NanoVisWindow::add_widget(const std::string &title, Widget *widget_left, Widget *widget_right) {
-    AdvancedGridLayout *l = layout(title);
+void NanoVisWindow::add_widget(const std::string& title, Widget* widget_left, Widget* widget_right) {
+    AdvancedGridLayout* l = layout(title);
     if (l->rowCount() > 0) {
         l->appendRow(3);
     }
@@ -215,24 +215,24 @@ void NanoVisWindow::add_widget(const std::string &title, Widget *widget_left, Wi
     }
 }
 
-void NanoVisWindow::set_timeout(int refresh, const std::function<bool()> &callback) {
+void NanoVisWindow::set_timeout(int refresh, const std::function<bool()>& callback) {
     if (callback) {
         m_screen->setInterval(callback, refresh);
     }
 }
 
-void NanoVisWindow::subscribe(void *value, const std::function<void()> &subscriber) {
+void NanoVisWindow::subscribe(void* value, const std::function<void()>& subscriber) {
     subscriber();
     m_subscribers[value][m_screen.get()] = subscriber;
 }
 
-Window *NanoVisWindow::panel(const std::string &title) {
+Window* NanoVisWindow::panel(const std::string& title) {
     if (m_panels.count(title) == 0) {
-        AdvancedGridLayout *l = new AdvancedGridLayout({60, 3, 120}, {});
+        AdvancedGridLayout* l = new AdvancedGridLayout({60, 3, 120}, {});
         l->setMargin(5);
         l->setColStretch(2, 1);
 
-        Window *w = new Window(m_screen, title);
+        Window* w = new Window(m_screen, title);
         w->setLayout(l);
         w->setVisible(true);
 
@@ -241,14 +241,14 @@ Window *NanoVisWindow::panel(const std::string &title) {
     return m_panels.at(title);
 }
 
-AdvancedGridLayout *NanoVisWindow::layout(const std::string &title) {
-    return static_cast<AdvancedGridLayout *>(panel(title)->layout());
+AdvancedGridLayout* NanoVisWindow::layout(const std::string& title) {
+    return static_cast<AdvancedGridLayout*>(panel(title)->layout());
 }
 
 void NanoVisWindow::draw() {
 }
 
-bool NanoVisWindow::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
+bool NanoVisWindow::mouseButtonEvent(const Vector2i& p, int button, bool down, int modifiers) {
     viewport_xyz_old = viewport_xyz;
     viewport_ryp_old = viewport_ryp;
     viewport_cursor_old = p;
@@ -278,7 +278,7 @@ bool NanoVisWindow::mouseButtonEvent(const Vector2i &p, int button, bool down, i
     return true;
 }
 
-bool NanoVisWindow::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
+bool NanoVisWindow::mouseMotionEvent(const Vector2i& p, const Vector2i& rel, int button, int modifiers) {
     Eigen::Vector2f delta = (p - viewport_cursor_old).cast<float>() * 0.1;
     if (viewport_rotation_mode) {
         Eigen::Matrix3f R_old = Eigen::Matrix3f::Identity();
@@ -309,15 +309,15 @@ bool NanoVisWindow::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int
     return true;
 }
 
-bool NanoVisWindow::mouseDragEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) {
+bool NanoVisWindow::mouseDragEvent(const Vector2i& p, const Vector2i& rel, int button, int modifiers) {
     return true;
 }
 
-bool NanoVisWindow::mouseEnterEvent(const Vector2i &p, bool enter) {
+bool NanoVisWindow::mouseEnterEvent(const Vector2i& p, bool enter) {
     return true;
 }
 
-bool NanoVisWindow::mouseScrollEvent(const Vector2i &p, const Vector2f &rel) {
+bool NanoVisWindow::mouseScrollEvent(const Vector2i& p, const Vector2f& rel) {
     viewport_scale += rel.y() * 0.01;
     return true;
 }
@@ -360,7 +360,7 @@ float NanoVisWindow::world_scale() const {
     return viewport_scale;
 }
 
-const Eigen::Vector3f &NanoVisWindow::pickup_point() const {
+const Eigen::Vector3f& NanoVisWindow::pickup_point() const {
     return viewport_pickup_point;
 }
 
@@ -368,9 +368,9 @@ void NanoVisWindow::set_position(int x, int y) {
     m_screen->set_position(x, y);
 }
 
-void NanoVisWindow::broadcast(const void *value) {
+void NanoVisWindow::broadcast(const void* value) {
     if (m_subscribers.count(value) > 0) {
-        for (const auto &s : m_subscribers.at(value)) {
+        for (const auto& s : m_subscribers.at(value)) {
             if (s.second) {
                 s.second();
             }

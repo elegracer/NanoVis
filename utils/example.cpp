@@ -6,7 +6,7 @@ class Example : public nanovis::NanoVis {
     double value;
     std::vector<Eigen::Vector3d> points;
 
-  public:
+public:
     Example() :
         NanoVis("NanoVis Example", 500, 500) {
         value = 0.5; // don't start with 0 or 1 :P

@@ -1,77 +1,102 @@
-cmake_minimum_required(VERSION 3.0.0)
-project(nanovis VERSION 0.1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
+project("NanoVis" LANGUAGES C CXX)
 
-find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(OpenCV REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/Modules")
 
-add_definitions(-DGL_SILENCE_DEPRECATION)
+# ccache
+find_program(CCACHE_FOUND ccache)
+if(CCACHE_FOUND)
+    message(STATUS "Found CCache")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+endif(CCACHE_FOUND)
 
-# configuring nanogui
-if (NOT IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ext/nanogui/src")
-  message(FATAL_ERROR "NanoGUI submodule is missing! "
-    "You probably did not clone the project with --recursive. It is possible to recover "
-    "by calling \"git submodule update --init --recursive\"")
+include(CMakeDependentOption)
+# superbuild settings
+include(SuperBuildDepends)
+
+# cpp standard settings
+superbuild_option(cpp17)
+superbuild_option(modern-cpp)
+
+# dependencies settings
+superbuild_depend(eigen)
+superbuild_depend(glfw)
+superbuild_depend(nanogui)
+superbuild_extern(opencv)
+
+# always generate PIC code, no matter static or shared library
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+# project directories settings
+set(NANOVIS_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(NANOVIS_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(NANOVIS_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(NANOVIS_BINARY_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/include)
+# set(NANOVIS_TEST_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
+
+# some build options
+option(NANOVIS_BUILD_EXAMPLE "Build nanovis example application" ON)
+
+set(NANOVIS_PUBLIC_HEADERS
+    ${NANOVIS_INCLUDE_DIR}/nanovis/nanovis.h
+)
+
+set(NANOVIS_PUBLIC_SOURCES
+)
+
+set(NANOVIS_PRIVATE_HEADERS
+    ${NANOVIS_SOURCE_DIR}/screen.h
+    ${NANOVIS_SOURCE_DIR}/window.h
+)
+
+set(NANOVIS_PRIVATE_SOURCES
+    ${NANOVIS_SOURCE_DIR}/nanovis.cpp
+    ${NANOVIS_SOURCE_DIR}/screen.cpp
+    ${NANOVIS_SOURCE_DIR}/window.cpp
+)
+
+add_library(nanovis)
+target_compile_definitions(nanovis
+    PRIVATE -DGL_SILENCE_DEPRECATION
+)
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(nanovis
+        PRIVATE
+            -Qunused-arguments
+            -mllvm
+            -inline-threshold=5000
+    )
 endif()
-
-# Disable unnecessary parts of nanogui
-set(NANOGUI_BUILD_EXAMPLE OFF CACHE BOOL " " FORCE)
-set(NANOGUI_BUILD_PYTHON  OFF CACHE BOOL " " FORCE)
-set(NANOGUI_INSTALL       OFF CACHE BOOL " " FORCE)
-
-# Use system or user defined Eigen
-set(NANOGUI_EIGEN_INCLUDE_DIR ${EIGEN3_INCLUDE_DIR} CACHE BOOL " " FORCE)
-message("NanoGUI will use Eigen located at \"${NANOGUI_EIGEN_INCLUDE_DIR}\".")
-
-add_subdirectory(ext/nanogui)
-
-set_property(TARGET glfw glfw_objects nanogui PROPERTY FOLDER "dependencies")
-add_definitions(${NANOGUI_EXTRA_DEFS})
-
-add_library(nanovis
-    src/nanovis.cpp
-    src/screen.cpp
-    src/window.cpp
-)
-
-target_compile_features(
-    nanovis
-    PUBLIC
-        cxx_std_14
-)
-
-target_include_directories(
-    nanovis
-    PUBLIC
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        ${NANOGUI_EXTRA_INCS}
-        ${CMAKE_CURRENT_SOURCE_DIR}/ext/nanogui/include
+set_target_properties(nanovis PROPERTIES CXX_EXTENSIONS OFF) # -std=c++17 instead of -std=g++17
+target_sources(nanovis
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${NANOVIS_PUBLIC_HEADERS}
+        ${NANOVIS_PUBLIC_SOURCES}
+        ${NANOVIS_PRIVATE_HEADERS}
+        ${NANOVIS_PRIVATE_SOURCES}
 )
-
-target_compile_definitions(
-    nanovis
+target_include_directories(nanovis
     PUBLIC
-        GL_SILENCE_DEPRECATION
-)
-
-target_link_libraries(
-    nanovis
-    PUBLIC
-        Eigen3::Eigen
-        ${OpenCV_LIBS}
-        nanogui
-        ${NANOGUI_EXTRA_LIBS}
-)
-
-add_executable(
-    example
-    example/example.cpp
-)
-
-target_link_libraries(
-    example
+        ${NANOVIS_INCLUDE_DIR}
+        ${NANOVIS_BINARY_INCLUDE_DIR}
     PRIVATE
-        nanovis
+        ${NANOVIS_SOURCE_DIR}
 )
+target_link_libraries(nanovis
+    PUBLIC
+        options::modern-cpp
+        depends::eigen
+        depends::glfw
+        depends::nanogui
+        depends::opencv
+)
+
+set(NANOVIS_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
+
+
+# Build example application if desired
+if(NANOVIS_BUILD_EXAMPLE)
+    add_executable(example utils/example.cpp)
+    target_link_libraries(example PRIVATE nanovis)
+endif()
