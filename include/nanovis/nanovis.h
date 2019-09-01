@@ -56,6 +56,8 @@ public:
 
     void set_position(int x, int y);
 
+    void set_mouse_scroll_sensibility(float sensibility);
+
 protected:
     virtual void draw();
 

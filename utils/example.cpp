@@ -27,6 +27,8 @@ public:
             }
         }
 
+        set_mouse_scroll_sensibility(0.01);
+
         add_graph("Panel B", "value", value, 1.0, 0.0);
         add_graph("Panel B", "shared value", shared_value, 1.0, 0.0);
         add_path(points);

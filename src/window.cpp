@@ -318,7 +318,7 @@ bool NanoVisWindow::mouseEnterEvent(const Vector2i& p, bool enter) {
 }
 
 bool NanoVisWindow::mouseScrollEvent(const Vector2i& p, const Vector2f& rel) {
-    viewport_scale += rel.y() * 0.01;
+    viewport_scale += rel.y() * mouse_scroll_sensibility;
     return true;
 }
 
@@ -366,6 +366,10 @@ const Eigen::Vector3f& NanoVisWindow::pickup_point() const {
 
 void NanoVisWindow::set_position(int x, int y) {
     m_screen->set_position(x, y);
+}
+
+void NanoVisWindow::set_mouse_scroll_sensibility(float sensibility) {
+    mouse_scroll_sensibility = sensibility;
 }
 
 void NanoVisWindow::broadcast(const void* value) {

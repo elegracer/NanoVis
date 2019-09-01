@@ -65,6 +65,8 @@ public:
 
     void set_position(int x, int y);
 
+    void set_mouse_scroll_sensibility(float sensibility);
+
 protected:
     nanogui::AdvancedGridLayout* layout(const std::string& title);
     virtual void draw();
@@ -84,6 +86,8 @@ private:
     float viewport_scale;
     bool viewport_rotation_mode = false;
     bool viewport_translation_mode = false;
+
+    float mouse_scroll_sensibility = 0.1;
 
 private:
     nanogui::ref<NanoVisScreen> m_screen;

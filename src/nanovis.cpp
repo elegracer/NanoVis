@@ -366,6 +366,10 @@ void NanoVis::set_position(int x, int y) {
     impl->window->set_position(x, y);
 }
 
+void NanoVis::set_mouse_scroll_sensibility(float sensibility) {
+    impl->window->set_mouse_scroll_sensibility(sensibility);
+}
+
 void NanoVis::draw() {
 }
 
