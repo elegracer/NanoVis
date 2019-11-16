@@ -67,6 +67,12 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             -mllvm
             -inline-threshold=5000
     )
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    target_compile_definitions(nanovis
+        PRIVATE
+            _CRT_SECURE_NO_WARNINGS
+            _USE_MATH_DEFINES
+    )
 endif()
 set_target_properties(nanovis PROPERTIES CXX_EXTENSIONS OFF) # -std=c++17 instead of -std=g++17
 target_sources(nanovis
