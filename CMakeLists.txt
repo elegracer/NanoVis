@@ -67,7 +67,8 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             -mllvm
             -inline-threshold=5000
     )
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+endif()
+if(MSVC)
     target_compile_definitions(nanovis
         PRIVATE
             _CRT_SECURE_NO_WARNINGS
