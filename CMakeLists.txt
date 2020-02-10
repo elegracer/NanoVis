@@ -16,7 +16,7 @@ include(CMakeDependentOption)
 include(SuperBuildDepends)
 
 # cpp standard settings
-superbuild_option(cpp17)
+superbuild_option(cpp11)
 superbuild_option(modern-cpp)
 
 # dependencies settings

@@ -1,5 +1,6 @@
 #include <nanovis/nanovis.h>
 #include <unordered_set>
+#include "make_unique.h"
 #include "window.h"
 
 using namespace nanovis;
