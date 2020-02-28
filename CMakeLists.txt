@@ -12,18 +12,38 @@ if(CCACHE_FOUND)
 endif(CCACHE_FOUND)
 
 include(CMakeDependentOption)
-# superbuild settings
-include(SuperBuildDepends)
+# # superbuild settings
+# include(SuperBuildDepends)
 
-# cpp standard settings
-superbuild_option(cpp17)
-superbuild_option(modern-cpp)
+# # cpp standard settings
+# superbuild_option(cpp17)
+# superbuild_option(modern-cpp)
 
-# dependencies settings
-superbuild_depend(eigen)
-superbuild_depend(glfw)
-superbuild_depend(nanogui)
-superbuild_extern(opencv)
+# # dependencies settings
+# superbuild_depend(eigen)
+# superbuild_depend(glfw)
+# superbuild_depend(nanogui)
+# superbuild_extern(opencv)
+
+if(NOT TARGET options::modern-cpp)
+    message(FATAL_ERROR "Target options::modern-cpp not defined!")
+endif()
+
+if(NOT TARGET depends::eigen)
+    message(FATAL_ERROR "Target depends::eigen not defined!")
+endif()
+
+if(NOT TARGET depends::glfw)
+    message(FATAL_ERROR "Target depends::glfw not defined!")
+endif()
+
+if(NOT TARGET depends::nanogui)
+    message(FATAL_ERROR "Target depends::nanogui not defined!")
+endif()
+
+if(NOT TARGET depends::opencv)
+    message(FATAL_ERROR "Target depends::opencv not defined!")
+endif()
 
 # always generate PIC code, no matter static or shared library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -98,6 +118,9 @@ target_link_libraries(nanovis
         depends::nanogui
         depends::opencv
 )
+
+add_library(depends::nanovis INTERFACE IMPORTED GLOBAL)
+target_link_libraries(depends::nanovis INTERFACE nanovis)
 
 set(NANOVIS_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
 
